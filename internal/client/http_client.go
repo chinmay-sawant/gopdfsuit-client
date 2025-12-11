@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/chinmay/gopdfsuit-client/internal/domain"
+	"github.com/chinmay/gopdfsuit-client/internal/utils"
 )
 
 // Config holds the client configuration.
@@ -288,7 +289,7 @@ func (c *Client) getRetryDelay(attempt int) time.Duration {
 		return time.Duration(c.config.RetryPolicy.WaitDuration(attempt)) * time.Millisecond
 	}
 
-	return c.config.RetryDelay * time.Duration(1<<uint(attempt))
+	return utils.CalculateBackoff(attempt, c.config.RetryDelay)
 }
 
 // logDebug logs a debug message if a logger is configured.
