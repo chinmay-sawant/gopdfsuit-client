@@ -272,5 +272,4 @@ Basic structure:
 ```
 
 ## License
-
-[Add your license information here]
+[MIT]
