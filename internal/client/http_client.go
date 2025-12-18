@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/chinmay/gopdfsuit-client/internal/domain"
-	"github.com/chinmay/gopdfsuit-client/internal/utils"
 )
 
 // Config holds the client configuration.
@@ -91,6 +90,7 @@ func WithHTTPClient(httpClient *http.Client) Option {
 type Client struct {
 	config     *Config
 	httpClient *http.Client
+	doer       domain.HTTPClient
 }
 
 // New creates a new Client with the given options.
@@ -112,68 +112,21 @@ func New(baseURL string, opts ...Option) *Client {
 		}
 	}
 
+	// Build the decorator chain
+	var doer domain.HTTPClient = NewBaseClient(c.httpClient, c.config.Headers)
+
+	// Add retry decorator
+	if c.config.MaxRetries > 0 {
+		doer = NewRetryClient(doer, c.config.MaxRetries, c.config.RetryDelay, c.config.RetryPolicy, c.config.Logger)
+	}
+
+	c.doer = doer
 	return c
 }
 
 // Do executes an HTTP request with retry logic.
 func (c *Client) Do(ctx context.Context, method, url string, body io.Reader) ([]byte, error) {
-	var lastErr error
-
-	for attempt := 0; attempt <= c.config.MaxRetries; attempt++ {
-		if attempt > 0 {
-			c.logDebug("Retry attempt %d for %s %s", attempt, method, url)
-			select {
-			case <-ctx.Done():
-				return nil, ctx.Err()
-			case <-time.After(c.getRetryDelay(attempt)):
-			}
-		}
-
-		req, err := http.NewRequestWithContext(ctx, method, url, body)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create request: %w", err)
-		}
-
-		for key, value := range c.config.Headers {
-			req.Header.Set(key, value)
-		}
-
-		resp, err := c.httpClient.Do(req)
-		if err != nil {
-			lastErr = err
-			if c.shouldRetry(attempt, err) {
-				continue
-			}
-			return nil, fmt.Errorf("%w: %v", domain.ErrHTTPRequest, err)
-		}
-
-		defer resp.Body.Close()
-
-		responseBody, err := io.ReadAll(resp.Body)
-		if err != nil {
-			lastErr = err
-			continue
-		}
-
-		if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-			return responseBody, nil
-		}
-
-		httpErr := domain.NewHTTPError(resp.StatusCode, fmt.Sprintf("HTTP %d", resp.StatusCode), nil)
-		lastErr = httpErr
-
-		if resp.StatusCode == http.StatusUnauthorized {
-			return nil, domain.ErrUnauthorized
-		}
-
-		if resp.StatusCode >= 500 && c.shouldRetry(attempt, httpErr) {
-			continue
-		}
-
-		return nil, httpErr
-	}
-
-	return nil, fmt.Errorf("%w: %v", domain.ErrMaxRetriesExceeded, lastErr)
+	return c.doer.Do(ctx, method, url, body)
 }
 
 // Post sends a POST request with JSON body.
@@ -184,117 +137,13 @@ func (c *Client) Post(ctx context.Context, url string, body interface{}) ([]byte
 	}
 
 	fullURL := c.config.BaseURL + url
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, fullURL, bytes.NewReader(jsonBody))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	for key, value := range c.config.Headers {
-		req.Header.Set(key, value)
-	}
-
-	return c.doWithRetry(ctx, req)
+	return c.Do(ctx, http.MethodPost, fullURL, bytes.NewReader(jsonBody))
 }
 
 // Get sends a GET request.
 func (c *Client) Get(ctx context.Context, url string) ([]byte, error) {
 	fullURL := c.config.BaseURL + url
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fullURL, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	for key, value := range c.config.Headers {
-		req.Header.Set(key, value)
-	}
-
-	return c.doWithRetry(ctx, req)
+	return c.Do(ctx, http.MethodGet, fullURL, nil)
 }
 
-// doWithRetry executes an HTTP request with retry logic.
-func (c *Client) doWithRetry(ctx context.Context, req *http.Request) ([]byte, error) {
-	var lastErr error
-
-	for attempt := 0; attempt <= c.config.MaxRetries; attempt++ {
-		if attempt > 0 {
-			c.logDebug("Retry attempt %d for %s %s", attempt, req.Method, req.URL.String())
-			select {
-			case <-ctx.Done():
-				return nil, ctx.Err()
-			case <-time.After(c.getRetryDelay(attempt)):
-			}
-
-			if req.GetBody != nil {
-				body, err := req.GetBody()
-				if err == nil {
-					req.Body = body
-				}
-			}
-		}
-
-		resp, err := c.httpClient.Do(req)
-		if err != nil {
-			lastErr = err
-			if c.shouldRetry(attempt, err) {
-				continue
-			}
-			return nil, fmt.Errorf("%w: %v", domain.ErrHTTPRequest, err)
-		}
-
-		responseBody, err := io.ReadAll(resp.Body)
-		resp.Body.Close()
-		if err != nil {
-			lastErr = err
-			continue
-		}
-
-		if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-			return responseBody, nil
-		}
-
-		httpErr := domain.NewHTTPError(resp.StatusCode, fmt.Sprintf("HTTP %d: %s", resp.StatusCode, string(responseBody)), nil)
-		lastErr = httpErr
-
-		if resp.StatusCode == http.StatusUnauthorized {
-			return nil, domain.ErrUnauthorized
-		}
-
-		if resp.StatusCode >= 500 && c.shouldRetry(attempt, httpErr) {
-			continue
-		}
-
-		return nil, httpErr
-	}
-
-	return nil, fmt.Errorf("%w: %v", domain.ErrMaxRetriesExceeded, lastErr)
-}
-
-// shouldRetry determines if a retry should be attempted.
-func (c *Client) shouldRetry(attempt int, err error) bool {
-	if attempt >= c.config.MaxRetries {
-		return false
-	}
-
-	if c.config.RetryPolicy != nil {
-		return c.config.RetryPolicy.ShouldRetry(attempt, err)
-	}
-
-	return true
-}
-
-// getRetryDelay returns the delay before the next retry.
-func (c *Client) getRetryDelay(attempt int) time.Duration {
-	if c.config.RetryPolicy != nil {
-		return time.Duration(c.config.RetryPolicy.WaitDuration(attempt)) * time.Millisecond
-	}
-
-	return utils.CalculateBackoff(attempt, c.config.RetryDelay)
-}
-
-// logDebug logs a debug message if a logger is configured.
-func (c *Client) logDebug(msg string, args ...interface{}) {
-	if c.config.Logger != nil {
-		c.config.Logger.Debug(msg, args...)
-	}
-}
+// doWithRetry is removed as it is replaced by RetryClient.

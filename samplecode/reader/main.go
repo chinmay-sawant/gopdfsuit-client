@@ -12,7 +12,7 @@ import (
 
 const (
 	baseURL    = "http://localhost:8080"
-	sampleJSON = "../../sample.json"
+	sampleJSON = "sample.json"
 	outputPath = "output_from_reader.pdf"
 )
 
