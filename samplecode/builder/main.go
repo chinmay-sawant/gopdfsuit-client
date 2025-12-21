@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	pdf "github.com/chinmay/gopdfsuit-client"
+	pdf "github.com/chinmay-sawant/gopdfsuit-client"
 )
 
 const (

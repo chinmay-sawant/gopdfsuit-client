@@ -5,11 +5,11 @@ import (
 	"context"
 	"time"
 
-	"github.com/chinmay/gopdfsuit-client/internal/builder"
-	"github.com/chinmay/gopdfsuit-client/internal/client"
-	"github.com/chinmay/gopdfsuit-client/internal/domain"
-	"github.com/chinmay/gopdfsuit-client/internal/factory"
-	"github.com/chinmay/gopdfsuit-client/internal/reader"
+	"github.com/chinmay-sawant/gopdfsuit-client/internal/builder"
+	"github.com/chinmay-sawant/gopdfsuit-client/internal/client"
+	"github.com/chinmay-sawant/gopdfsuit-client/internal/domain"
+	"github.com/chinmay-sawant/gopdfsuit-client/internal/factory"
+	"github.com/chinmay-sawant/gopdfsuit-client/internal/reader"
 )
 
 // Re-export domain types

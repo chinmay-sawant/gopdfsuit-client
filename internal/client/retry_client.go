@@ -5,8 +5,8 @@ import (
 	"io"
 	"time"
 
-	"github.com/chinmay/gopdfsuit-client/internal/domain"
-	"github.com/chinmay/gopdfsuit-client/internal/utils"
+	"github.com/chinmay-sawant/gopdfsuit-client/internal/domain"
+	"github.com/chinmay-sawant/gopdfsuit-client/internal/utils"
 )
 
 // RetryClient decorates an HTTPClient with retry logic.

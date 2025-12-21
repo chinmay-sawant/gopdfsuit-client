@@ -2,8 +2,8 @@
 package factory
 
 import (
-	"github.com/chinmay/gopdfsuit-client/internal/builder"
-	"github.com/chinmay/gopdfsuit-client/internal/domain"
+	"github.com/chinmay-sawant/gopdfsuit-client/internal/builder"
+	"github.com/chinmay-sawant/gopdfsuit-client/internal/domain"
 )
 
 // DocumentType represents the type of document to create.

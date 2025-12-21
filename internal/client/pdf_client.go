@@ -5,7 +5,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/chinmay/gopdfsuit-client/internal/domain"
+	"github.com/chinmay-sawant/gopdfsuit-client/internal/domain"
 )
 
 // PDFClient handles PDF document operations.

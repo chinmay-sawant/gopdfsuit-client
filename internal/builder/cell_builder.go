@@ -2,7 +2,7 @@
 package builder
 
 import (
-	"github.com/chinmay/gopdfsuit-client/internal/domain"
+	"github.com/chinmay-sawant/gopdfsuit-client/internal/domain"
 )
 
 // cellBuilder implements the CellBuilder interface.

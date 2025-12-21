@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 
-	"github.com/chinmay/gopdfsuit-client/internal/domain"
+	"github.com/chinmay-sawant/gopdfsuit-client/internal/domain"
 )
 
 // HeaderClient decorates an HTTPClient to add default headers.

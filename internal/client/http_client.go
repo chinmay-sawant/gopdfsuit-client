@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/chinmay/gopdfsuit-client/internal/domain"
+	"github.com/chinmay-sawant/gopdfsuit-client/internal/domain"
 )
 
 // Config holds the client configuration.

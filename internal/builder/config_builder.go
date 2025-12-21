@@ -4,7 +4,7 @@ package builder
 import (
 	"fmt"
 
-	"github.com/chinmay/gopdfsuit-client/internal/domain"
+	"github.com/chinmay-sawant/gopdfsuit-client/internal/domain"
 )
 
 // ConfigBuilder provides a fluent API for building Config.

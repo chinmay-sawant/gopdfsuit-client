@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/chinmay/gopdfsuit-client/internal/domain"
+	"github.com/chinmay-sawant/gopdfsuit-client/internal/domain"
 )
 
 // JSONFileReader reads documents from JSON files.

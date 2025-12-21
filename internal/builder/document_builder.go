@@ -4,7 +4,7 @@ package builder
 import (
 	"sync"
 
-	"github.com/chinmay/gopdfsuit-client/internal/domain"
+	"github.com/chinmay-sawant/gopdfsuit-client/internal/domain"
 )
 
 // documentBuilder implements the DocumentBuilder interface with fluent API.

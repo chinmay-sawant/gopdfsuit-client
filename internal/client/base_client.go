@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/chinmay/gopdfsuit-client/internal/domain"
+	"github.com/chinmay-sawant/gopdfsuit-client/internal/domain"
 )
 
 // BaseClient implements the basic HTTP request execution.

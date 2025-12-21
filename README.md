@@ -10,7 +10,7 @@ A Go client library for creating and sending PDF documents to a PDF generation s
 ## Installation
 
 ```bash
-go get github.com/chinmay/gopdfsuit-client
+go get github.com/chinmay-sawant/gopdfsuit-client
 ```
 
 ## Features
@@ -76,7 +76,7 @@ gopdfsuit-client/
 ### Import the Package
 
 ```go
-import pdf "github.com/chinmay/gopdfsuit-client"
+import pdf "github.com/chinmay-sawant/gopdfsuit-client"
 ```
 
 ### Create a Client
